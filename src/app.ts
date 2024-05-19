@@ -1,11 +1,32 @@
 import fastify from 'fastify'
-import { appRoutes } from './http/routes'
 import { ZodError } from 'zod'
+import fastifyJwt from '@fastify/jwt'
 import { env } from './env'
+import { usersRoutes } from './http/controllers/users/routes'
+import { settingsRoutes } from './http/controllers/settings/routes'
+import { categoriesRoutes } from './http/controllers/categories/routes'
+import { estabilishmentsRoutes } from './http/controllers/estabilishments/routes'
+import { bankAccoutnsRoutes } from './http/controllers/bank-accounts/routes'
+import { transactionsRoutes } from './http/controllers/transactions/routes'
+
+import cors from '@fastify/cors'
 
 export const app = fastify()
 
-app.register(appRoutes)
+app.register(cors, {
+  origin: '*',
+})
+
+app.register(fastifyJwt, {
+  secret: env.JWT_SECRET,
+})
+
+app.register(usersRoutes)
+app.register(settingsRoutes)
+app.register(categoriesRoutes)
+app.register(estabilishmentsRoutes)
+app.register(bankAccoutnsRoutes)
+app.register(transactionsRoutes)
 
 app.setErrorHandler((error, _, reply) => {
   if (error instanceof ZodError) {

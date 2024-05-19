@@ -1,11 +1,10 @@
 import { UsersRepository } from '@/repositories/users-repository'
-// import { UserAlreadyExistsError } from './errors/user-already-exists-error'
 
-export class GetUsersUseCase {
+export class FetchUsersUseCase {
   constructor(private usersRepository: UsersRepository) {}
 
   async execute() {
-    const users = await this.usersRepository.list()
+    const users = await this.usersRepository.findMany()
 
     return users
   }
