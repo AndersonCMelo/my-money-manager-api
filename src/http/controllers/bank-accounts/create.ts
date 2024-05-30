@@ -8,7 +8,7 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
     bankName: z.string(),
     accountLabel: z.string().nullable(),
     openingBalance: z.number(),
-    accountBalance: z.number().nullable(),
+    accountBalance: z.number(),
     type: z.string().nullable(),
     ownerId: z.string(),
   })

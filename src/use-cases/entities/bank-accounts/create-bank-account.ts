@@ -38,7 +38,7 @@ export class CreateBankAccountsUseCase {
 
     const bankAccount = await this.bankAccountsRepository.create({
       bankName,
-      accountLabel,
+      accountLabel: accountLabel ?? bankName,
       openingBalance: openingBalance ?? accountBalance,
       accountBalance,
       type,

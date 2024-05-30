@@ -78,7 +78,8 @@ export class CreateTransactionUseCase {
       date,
       categoryId,
       bankAccountId,
-      destinationBankAccountId,
+      destinationBankAccountId:
+        type !== 'transfer' ? null : destinationBankAccountId,
     })
 
     if (type === 'expense' || type === 'income') {
