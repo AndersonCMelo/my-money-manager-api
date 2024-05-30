@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client'
 import {
   CategoriesRepository,
   UpdateCategoryOrderProps,
+  UpdateCategoryProps,
 } from '../categories-repository'
 
 export class PrismaCategoriesRepository implements CategoriesRepository {
@@ -39,9 +40,9 @@ export class PrismaCategoriesRepository implements CategoriesRepository {
 
   async findMany() {
     const categories = await prisma.categories.findMany({
-      orderBy: {
+      /* orderBy: {
         order: 'asc',
-      },
+      }, */
     })
 
     return categories
@@ -59,7 +60,7 @@ export class PrismaCategoriesRepository implements CategoriesRepository {
     return category
   }
 
-  async update(data: Prisma.CategoriesCreateInput) {
+  async update(data: UpdateCategoryProps) {
     const category = await prisma.categories.update({
       where: {
         id: data.id,
