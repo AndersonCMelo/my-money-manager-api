@@ -37,10 +37,11 @@ model Settings {
 }
 
 model Categories {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   category String
   order    Int
   color    String
+  extra    String?
 
   transactions Transactions[]
 
