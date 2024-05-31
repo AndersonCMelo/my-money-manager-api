@@ -12,7 +12,7 @@ export async function updateOrder(
   })
 
   const updateBodySchema = z.object({
-    order: z.number(),
+    order: z.string(),
   })
 
   const { id } = updateParamsSchema.parse(request.params)

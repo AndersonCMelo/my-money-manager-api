@@ -29,7 +29,7 @@ export class InMemoryCategoriesRepository implements CategoriesRepository {
     return category
   }
 
-  async findByOrder(order: number) {
+  async findByOrder(order: string) {
     const category = this.items.find((item) => item.order === order)
 
     if (!category) {
@@ -50,7 +50,7 @@ export class InMemoryCategoriesRepository implements CategoriesRepository {
       id: randomUUID(),
       category: data.category,
       color: data.color,
-      order: typeof data.order === 'number' ? data.order : Number(data.order),
+      order: data.order,
     }
 
     this.items.push(category)

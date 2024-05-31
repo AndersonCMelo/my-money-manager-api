@@ -7,7 +7,7 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
   const createBodySchema = z.object({
     category: z.string(),
     color: z.string(),
-    order: z.number(),
+    order: z.string(),
   })
 
   const { category, color, order } = createBodySchema.parse(request.body)
