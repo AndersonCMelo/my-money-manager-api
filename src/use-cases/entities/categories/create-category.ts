@@ -6,7 +6,7 @@ import { CategoryOrderAlreadyExistsError } from '@/use-cases/errors/category-ord
 interface CreateCategoryUseCaseRequest {
   category: string
   color: string
-  order: string
+  order: number
 }
 
 interface CreateCategoryUseCaseResponse {

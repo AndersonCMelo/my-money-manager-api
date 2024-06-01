@@ -3,7 +3,7 @@ import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-err
 
 interface UpdateCategoryUseCaseRequest {
   id: string
-  order: string
+  order: number
 }
 
 export class UpdateCategoryOrderUseCase {

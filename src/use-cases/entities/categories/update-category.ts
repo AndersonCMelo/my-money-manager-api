@@ -7,7 +7,7 @@ interface UpdateCategoryUseCaseRequest {
   id: string
   category: string
   color: string
-  // order: string
+  // order: number
 }
 
 interface UpdateCategoryUseCaseResponse {
