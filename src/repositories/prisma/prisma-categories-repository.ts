@@ -28,7 +28,7 @@ export class PrismaCategoriesRepository implements CategoriesRepository {
     return category
   }
 
-  async findByOrder(order: string) {
+  async findByOrder(order: number) {
     const category = await prisma.categories.findFirst({
       where: {
         order,
@@ -39,8 +39,8 @@ export class PrismaCategoriesRepository implements CategoriesRepository {
   }
 
   async findMany() {
-    // const categories = await prisma.categories.findMany()
-    const categories = await prisma.classification.findMany()
+    // const categories = await prisma.classification.findMany()
+    const categories = await prisma.categories.findMany()
 
     return categories
   }
