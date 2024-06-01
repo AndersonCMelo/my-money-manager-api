@@ -48,6 +48,17 @@ model Categories {
   @@map("categories")
 }
 
+model Classification {
+  id       String @id @default(uuid())
+  category String
+  order    Int
+  color    String
+
+  transactions Transactions[]
+
+  @@map("classifications")
+}
+
 model Estabilishments {
   id             String @id @default(uuid())
   estabilishment String
@@ -93,10 +104,14 @@ model Transactions {
   categoryId String?
   category   Categories? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
+  classificationId String?
+  classification   Classification? @relation(fields: [classificationId], references: [id], onDelete: SetNull)
+
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
   @@index([bankAccountId])
   @@index([categoryId])
+  @@index([classificationId])
   @@map("transactions")
 }
