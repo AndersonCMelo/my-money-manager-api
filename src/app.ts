@@ -8,6 +8,7 @@ import { categoriesRoutes } from './http/controllers/categories/routes'
 import { estabilishmentsRoutes } from './http/controllers/estabilishments/routes'
 import { bankAccoutnsRoutes } from './http/controllers/bank-accounts/routes'
 import { transactionsRoutes } from './http/controllers/transactions/routes'
+import { metricsRoutes } from './http/controllers/metrics/routes'
 
 import cors from '@fastify/cors'
 
@@ -27,6 +28,7 @@ app.register(categoriesRoutes)
 app.register(estabilishmentsRoutes)
 app.register(bankAccoutnsRoutes)
 app.register(transactionsRoutes)
+app.register(metricsRoutes)
 
 app.setErrorHandler((error, _, reply) => {
   if (error instanceof ZodError) {
