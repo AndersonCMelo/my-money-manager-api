@@ -51,6 +51,7 @@ export class InMemoryCategoriesRepository implements CategoriesRepository {
       category: data.category,
       color: data.color,
       order: data.order!,
+      test: 0, // TODO: remove
     }
 
     this.items.push(category)
