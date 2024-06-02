@@ -41,11 +41,7 @@ export class PrismaClassificationsRepository
   }
 
   async findMany() {
-    const classifications = await prisma.classification.findMany({
-      orderBy: {
-        order: 'asc',
-      },
-    })
+    const classifications = await prisma.classification.findMany()
 
     return classifications
   }
