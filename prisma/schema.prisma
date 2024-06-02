@@ -76,17 +76,6 @@ model BankAccounts {
   @@map("bank_accounts")
 }
 
-model Classification {
-  id    String @id @default(uuid())
-  name  String
-  order Int?
-  color String
-
-  transactions Transactions[]
-
-  @@map("classifications")
-}
-
 model Transactions {
   id             String   @id @default(uuid())
   amount         Int
@@ -104,14 +93,10 @@ model Transactions {
   categoryId String?
   category   Categories? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  classificationId String?
-  classification   Classification? @relation(fields: [classificationId], references: [id], onDelete: SetNull)
-
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
   @@index([bankAccountId])
   @@index([categoryId])
-  @@index([classificationId])
   @@map("transactions")
 }
