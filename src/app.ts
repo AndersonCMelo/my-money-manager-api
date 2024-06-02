@@ -10,6 +10,7 @@ import { bankAccoutnsRoutes } from './http/controllers/bank-accounts/routes'
 import { transactionsRoutes } from './http/controllers/transactions/routes'
 
 import cors from '@fastify/cors'
+import { classificationsRoutes } from './http/controllers/classifications/routes'
 
 export const app = fastify()
 
@@ -24,6 +25,7 @@ app.register(fastifyJwt, {
 app.register(usersRoutes)
 app.register(settingsRoutes)
 app.register(categoriesRoutes)
+app.register(classificationsRoutes)
 app.register(estabilishmentsRoutes)
 app.register(bankAccoutnsRoutes)
 app.register(transactionsRoutes)

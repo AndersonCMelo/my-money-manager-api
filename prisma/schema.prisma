@@ -42,7 +42,6 @@ model Categories {
   category String
   order    Int?
   color    String
-  test     Int?
 
   transactions Transactions[]
 
@@ -50,9 +49,8 @@ model Categories {
 }
 
 model Estabilishments {
-  id             String  @id @default(uuid())
+  id             String @id @default(uuid())
   estabilishment String
-  test           String?
 
   @@map("estabilishments")
 }
@@ -79,11 +77,10 @@ model BankAccounts {
 }
 
 model Classification {
-  id       String @id @default(uuid())
-  category String
-  order    Int?
-  color    String
-  test     Int?
+  id    String @id @default(uuid())
+  name  String
+  order Int?
+  color String
 
   transactions Transactions[]
 

@@ -27,7 +27,6 @@ export class InMemoryEstabilishmentsRepository
     const estabilishment: Estabilishments = {
       id: randomUUID(),
       estabilishment: data.estabilishment,
-      test: 'test', // TODO: remove
     }
 
     this.items.push(estabilishment)
