@@ -39,8 +39,11 @@ export class PrismaCategoriesRepository implements CategoriesRepository {
   }
 
   async findMany() {
-    // const categories = await prisma.classification.findMany()
-    const categories = await prisma.categories.findMany()
+    const categories = await prisma.categories.findMany({
+      orderBy: {
+        order: 'asc',
+      },
+    })
 
     return categories
   }
