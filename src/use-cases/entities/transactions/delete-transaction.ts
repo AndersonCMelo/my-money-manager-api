@@ -5,6 +5,7 @@ import { calculateBalanceWhenDeleteTransaction } from '@/utils/calculator/bank-a
 
 interface DeleteTransactionUseCaseRequest {
   id: string
+  deleteGroup?: boolean
 }
 
 export class DeleteTransactionUseCase {
@@ -13,11 +14,22 @@ export class DeleteTransactionUseCase {
     private bankAccountsRepository: BankAccountsRepository,
   ) {}
 
-  async execute({ id }: DeleteTransactionUseCaseRequest) {
+  async execute({ id, deleteGroup = false }: DeleteTransactionUseCaseRequest) {
     const transaction = await this.transactionsRepository.findById(id)
 
     if (!transaction) {
       throw new ResourceNotFoundError()
+    }
+
+    if (transaction.type === 'credit_expense') {
+      if (deleteGroup && transaction.installmentGroupId) {
+        await this.transactionsRepository.deleteByGroup(
+          transaction.installmentGroupId,
+        )
+      } else {
+        await this.transactionsRepository.delete(id)
+      }
+      return
     }
 
     await this.transactionsRepository.delete(id)
@@ -30,24 +42,47 @@ export class DeleteTransactionUseCase {
       return
     }
 
-    if (transaction.type === 'expense' || transaction.type === 'income') {
-      const { source } = await calculateBalanceWhenDeleteTransaction({
+    if (
+      transaction.type === 'expense' ||
+      transaction.type === 'income' ||
+      transaction.type === 'credit_payment'
+    ) {
+      const balanceType =
+        transaction.type === 'credit_payment' ? 'expense' : transaction.type
+
+      const { source } = calculateBalanceWhenDeleteTransaction({
         transactionValue: transaction.amount,
         bankAccount,
-        type: transaction.type,
+        type: balanceType,
       })
 
       await this.bankAccountsRepository.updateBalance({
         id: bankAccount.id,
         accountBalance: source,
       })
+
+      if (transaction.type === 'credit_payment' && transaction.creditCardId) {
+        const billingMonth = transaction.date.substring(0, 7)
+        const installments =
+          await this.transactionsRepository.findByCreditCardAndMonth(
+            transaction.creditCardId,
+            billingMonth,
+          )
+
+        if (installments.length > 0) {
+          await this.transactionsRepository.setPaidStatus(
+            installments.map((installment) => installment.id),
+            false,
+          )
+        }
+      }
     } else {
       const destinationBankAccount = await this.bankAccountsRepository.findById(
         transaction.destinationBankAccountId!,
       )
 
       if (!destinationBankAccount) {
-        const { source } = await calculateBalanceWhenDeleteTransaction({
+        const { source } = calculateBalanceWhenDeleteTransaction({
           transactionValue: transaction.amount,
           bankAccount,
           type: 'transfer',
@@ -59,13 +94,12 @@ export class DeleteTransactionUseCase {
           accountBalance: source,
         })
       } else {
-        const { source, destination } =
-          await calculateBalanceWhenDeleteTransaction({
-            transactionValue: transaction.amount,
-            bankAccount,
-            type: 'transfer',
-            destinationBankAccount,
-          })
+        const { source, destination } = calculateBalanceWhenDeleteTransaction({
+          transactionValue: transaction.amount,
+          bankAccount,
+          type: 'transfer',
+          destinationBankAccount,
+        })
 
         await this.bankAccountsRepository.updateBalance({
           id: bankAccount.id,

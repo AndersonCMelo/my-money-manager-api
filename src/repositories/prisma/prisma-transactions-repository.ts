@@ -6,52 +6,46 @@ import {
   UpdateTransactionRequest,
 } from '../transactions-repository'
 
+const defaultInclude = {
+  category: true,
+  bankAccount: true,
+  creditCard: true,
+}
+
 export class PrismaTransactionsRepository implements TransactionsRepository {
   async findById(id: string) {
-    const transaction = await prisma.transactions.findUnique({
-      where: {
-        id,
-      },
-    })
-
-    return transaction
+    return prisma.transactions.findUnique({ where: { id } })
   }
 
   async findByMonth(month: string) {
-    const transactions = await prisma.transactions.findMany({
+    return prisma.transactions.findMany({
       where: {
-        date: {
-          startsWith: month,
-        },
+        date: { startsWith: month },
       },
-      orderBy: {
-        date: 'desc',
-      },
-      include: {
-        category: true,
-        bankAccount: true,
-      },
+      orderBy: { date: 'desc' },
+      include: defaultInclude,
     })
-
-    return transactions
   }
 
   async findMany() {
-    const transactions = await prisma.transactions.findMany({
-      orderBy: {
-        date: 'desc',
-      },
-      include: {
-        category: true,
-        bankAccount: true,
+    return prisma.transactions.findMany({
+      orderBy: { date: 'desc' },
+      include: defaultInclude,
+    })
+  }
+
+  async findByCreditCardAndMonth(creditCardId: string, month: string) {
+    return prisma.transactions.findMany({
+      where: {
+        creditCardId,
+        type: 'credit_expense',
+        date: { startsWith: month },
       },
     })
-
-    return transactions
   }
 
   async create(data: Prisma.TransactionsUncheckedCreateInput) {
-    const transaction = await prisma.transactions.create({
+    return prisma.transactions.create({
       data: {
         description: data.description,
         amount: data.amount,
@@ -59,65 +53,49 @@ export class PrismaTransactionsRepository implements TransactionsRepository {
         type: data.type,
         essencial: data.essencial,
         date: data.date,
-        category: {
-          connect: {
-            id: data.categoryId!,
-          },
-        },
-        bankAccount: {
-          connect: {
-            id: data.bankAccountId!,
-          },
-        },
-        destinationBankAccountId: data.destinationBankAccountId!,
+        categoryId: data.categoryId ?? undefined,
+        bankAccountId: data.bankAccountId ?? undefined,
+        destinationBankAccountId: data.destinationBankAccountId,
+        creditCardId: data.creditCardId ?? undefined,
+        installmentGroupId: data.installmentGroupId ?? undefined,
+        installmentNumber: data.installmentNumber ?? undefined,
+        totalInstallments: data.totalInstallments ?? undefined,
+        isPaid: data.isPaid ?? false,
       },
-      include: {
-        category: true,
-        bankAccount: true,
-      },
+      include: defaultInclude,
     })
-
-    return transaction
   }
 
   async update(data: UpdateTransactionRequest) {
-    const transaction = await prisma.transactions.update({
-      where: {
-        id: data.id,
-      },
+    return prisma.transactions.update({
+      where: { id: data.id },
       data: {
         description: data.description,
-        // amount: data.amount,
         estabilishment: data.estabilishment,
-        // type: data.type,
         essencial: data.essencial,
         date: data.date,
-        category: {
-          connect: {
-            id: data.categoryId!,
-          },
-        },
-        /* bankAccount: {
-          connect: {
-            id: data.bankAccountId!,
-          },
-        }, */
-        // destinationBankAccountId: data.destinationBankAccountId!,
+        ...(data.categoryId
+          ? { category: { connect: { id: data.categoryId } } }
+          : {}),
       },
-      include: {
-        category: true,
-        bankAccount: true,
-      },
+      include: defaultInclude,
     })
-
-    return transaction
   }
 
   async delete(id: string) {
-    await prisma.transactions.delete({
-      where: {
-        id,
-      },
+    await prisma.transactions.delete({ where: { id } })
+  }
+
+  async deleteByGroup(installmentGroupId: string) {
+    await prisma.transactions.deleteMany({
+      where: { installmentGroupId },
+    })
+  }
+
+  async setPaidStatus(ids: string[], isPaid: boolean) {
+    await prisma.transactions.updateMany({
+      where: { id: { in: ids } },
+      data: { isPaid },
     })
   }
 }

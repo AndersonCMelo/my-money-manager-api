@@ -4,6 +4,7 @@ import { DeleteTransactionUseCase } from './delete-transaction'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { InMemoryBankAccountsRepository } from '@/repositories/in-memory/in-memory-bank-accounts-repository'
 import { InMemoryCategoriesRepository } from '@/repositories/in-memory/in-memory-categories-repository'
+import { InMemoryCreditCardsRepository } from '@/repositories/in-memory/in-memory-credit-cards-repository'
 import { CreateTransactionUseCase } from './create-transaction'
 
 let transactionsRepository: InMemoryTransactionsRepository
@@ -11,22 +12,26 @@ let bankAccountsRepository: InMemoryBankAccountsRepository
 let sut: DeleteTransactionUseCase
 
 let categoriesRepository: InMemoryCategoriesRepository
+let creditCardsRepository: InMemoryCreditCardsRepository
 let createTransactionUseCase: CreateTransactionUseCase
 
 describe('Delete Transaction Use Case', () => {
   beforeEach(() => {
     transactionsRepository = new InMemoryTransactionsRepository()
     bankAccountsRepository = new InMemoryBankAccountsRepository()
+    categoriesRepository = new InMemoryCategoriesRepository()
+    creditCardsRepository = new InMemoryCreditCardsRepository()
+
     sut = new DeleteTransactionUseCase(
       transactionsRepository,
       bankAccountsRepository,
     )
 
-    categoriesRepository = new InMemoryCategoriesRepository()
     createTransactionUseCase = new CreateTransactionUseCase(
       transactionsRepository,
       categoriesRepository,
       bankAccountsRepository,
+      creditCardsRepository,
     )
   })
 
@@ -83,6 +88,8 @@ describe('Delete Transaction Use Case', () => {
         categoryId: category.id,
         bankAccountId: bankAccount.id,
         destinationBankAccountId: null,
+        creditCardId: null,
+        totalInstallments: null,
       })
 
     await sut.execute({ id: createdTransaction.id })
@@ -120,6 +127,8 @@ describe('Delete Transaction Use Case', () => {
         categoryId: category.id,
         bankAccountId: bankAccount.id,
         destinationBankAccountId: null,
+        creditCardId: null,
+        totalInstallments: null,
       })
 
     await sut.execute({ id: createdTransaction.id })
@@ -166,6 +175,8 @@ describe('Delete Transaction Use Case', () => {
         categoryId: category.id,
         bankAccountId: bankAccount.id,
         destinationBankAccountId: destinationBankAccount.id,
+        creditCardId: null,
+        totalInstallments: null,
       })
 
     await sut.execute({ id: createdTransaction.id })

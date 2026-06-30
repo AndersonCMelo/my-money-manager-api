@@ -1,22 +1,18 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
-import { makeDeleteTransactionUseCase } from '@/use-cases/factories/entities/transactions/make-delete-transaction-use-case'
+import { makeDeleteCreditCardUseCase } from '@/use-cases/factories/entities/credit-cards/make-delete-credit-card-use-case'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 
-export async function deleteTransaction(
+export async function deleteCreditCard(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
   const paramsSchema = z.object({ id: z.string() })
-  const querySchema = z.object({ group: z.coerce.boolean().optional() })
-
   const { id } = paramsSchema.parse(request.params)
-  const { group } = querySchema.parse(request.query)
 
   try {
-    const useCase = makeDeleteTransactionUseCase()
-
-    await useCase.execute({ id, deleteGroup: group ?? false })
+    const useCase = makeDeleteCreditCardUseCase()
+    await useCase.execute({ id })
 
     return reply.status(200).send()
   } catch (error) {

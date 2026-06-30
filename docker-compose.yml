@@ -1,11 +1,28 @@
 version: '3'
 
-service:
+services:
   mymoneymanager-api-postgres:
     image: bitnami/postgresql
-    ports: 
+    ports:
       - 5432:5432
-    environment: 
+    environment:
       - POSTGRESQL_USERNAME=docker
       - POSTGRESQL_PASSWORD=docker
-      - POSTGRESQL_DATABASE=mymoneymanager-postgres
+      - POSTGRESQL_DATABASE=mymoneymanager-api-postgres
+    volumes:
+      - mymoneymanager_dev_data:/bitnami/postgresql
+
+  mymoneymanager-api-postgres-local:
+    image: bitnami/postgresql
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRESQL_USERNAME=docker
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=mymoneymanager-api-local
+    volumes:
+      - mymoneymanager_local_data:/bitnami/postgresql
+
+volumes:
+  mymoneymanager_dev_data:
+  mymoneymanager_local_data:

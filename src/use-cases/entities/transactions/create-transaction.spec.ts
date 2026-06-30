@@ -3,10 +3,12 @@ import { InMemoryTransactionsRepository } from '@/repositories/in-memory/in-memo
 import { CreateTransactionUseCase } from './create-transaction'
 import { InMemoryCategoriesRepository } from '@/repositories/in-memory/in-memory-categories-repository'
 import { InMemoryBankAccountsRepository } from '@/repositories/in-memory/in-memory-bank-accounts-repository'
+import { InMemoryCreditCardsRepository } from '@/repositories/in-memory/in-memory-credit-cards-repository'
 
 let transactionsRepository: InMemoryTransactionsRepository
 let categoriesRepository: InMemoryCategoriesRepository
 let bankAccountsRepository: InMemoryBankAccountsRepository
+let creditCardsRepository: InMemoryCreditCardsRepository
 let sut: CreateTransactionUseCase
 
 describe('Create Transaction Use Case', () => {
@@ -14,10 +16,12 @@ describe('Create Transaction Use Case', () => {
     transactionsRepository = new InMemoryTransactionsRepository()
     categoriesRepository = new InMemoryCategoriesRepository()
     bankAccountsRepository = new InMemoryBankAccountsRepository()
+    creditCardsRepository = new InMemoryCreditCardsRepository()
     sut = new CreateTransactionUseCase(
       transactionsRepository,
       categoriesRepository,
       bankAccountsRepository,
+      creditCardsRepository,
     )
   })
 
@@ -47,6 +51,8 @@ describe('Create Transaction Use Case', () => {
       categoryId: category.id,
       bankAccountId: bankAccount.id,
       destinationBankAccountId: null,
+      creditCardId: null,
+      totalInstallments: null,
     })
 
     expect(transaction.id).toEqual(expect.any(String))
@@ -73,6 +79,8 @@ describe('Create Transaction Use Case', () => {
         categoryId: 'category.id',
         bankAccountId: bankAccount.id,
         destinationBankAccountId: null,
+        creditCardId: null,
+        totalInstallments: null,
       }),
     ).rejects.toBeInstanceOf(Error)
   })
@@ -95,6 +103,8 @@ describe('Create Transaction Use Case', () => {
         categoryId: category.id,
         bankAccountId: 'bankAccount.id',
         destinationBankAccountId: null,
+        creditCardId: null,
+        totalInstallments: null,
       }),
     ).rejects.toBeInstanceOf(Error)
   })
@@ -134,6 +144,8 @@ describe('Create Transaction Use Case', () => {
       categoryId: category.id,
       bankAccountId: bankAccount.id,
       destinationBankAccountId: destinationBankAccount.id,
+      creditCardId: null,
+      totalInstallments: null,
     })
 
     expect(transaction.id).toEqual(expect.any(String))
@@ -166,6 +178,8 @@ describe('Create Transaction Use Case', () => {
         categoryId: category.id,
         bankAccountId: bankAccount.id,
         destinationBankAccountId: null,
+        creditCardId: null,
+        totalInstallments: null,
       }),
     ).rejects.toBeInstanceOf(Error)
   })
@@ -197,6 +211,8 @@ describe('Create Transaction Use Case', () => {
         categoryId: category.id,
         bankAccountId: bankAccount.id,
         destinationBankAccountId: 'some-bank-id',
+        creditCardId: null,
+        totalInstallments: null,
       }),
     ).rejects.toBeInstanceOf(Error)
   })
@@ -227,6 +243,8 @@ describe('Create Transaction Use Case', () => {
       categoryId: category.id,
       bankAccountId: bankAccount.id,
       destinationBankAccountId: null,
+      creditCardId: null,
+      totalInstallments: null,
     })
 
     expect(transaction.id).toEqual(expect.any(String))
@@ -259,6 +277,8 @@ describe('Create Transaction Use Case', () => {
       categoryId: category.id,
       bankAccountId: bankAccount.id,
       destinationBankAccountId: null,
+      creditCardId: null,
+      totalInstallments: null,
     })
 
     expect(transaction.id).toEqual(expect.any(String))
@@ -300,6 +320,8 @@ describe('Create Transaction Use Case', () => {
       categoryId: category.id,
       bankAccountId: bankAccount.id,
       destinationBankAccountId: destinationBankAccount.id,
+      creditCardId: null,
+      totalInstallments: null,
     })
 
     expect(transaction.id).toEqual(expect.any(String))

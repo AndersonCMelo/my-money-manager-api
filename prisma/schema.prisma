@@ -9,9 +9,16 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionsType {
+  income
+  expense
+  transfer
+  credit_expense
+  credit_payment
 }
 
 model User {
@@ -25,6 +32,7 @@ model User {
   updated_at DateTime @default(now()) @updatedAt
 
   bankAccounts BankAccounts[]
+  creditCards  CreditCards[]
 
   @@map("users")
 }
@@ -77,12 +85,12 @@ model BankAccounts {
 }
 
 model Transactions {
-  id             String   @id @default(uuid())
+  id             String           @id @default(uuid())
   amount         Int
   date           String
-  description    String?  @db.Text
+  description    String?          @db.Text
   estabilishment String?
-  type           String // income / expense / transfer
+  type           TransactionsType // income / expense / transfer / credit_expense / credit_payment
   essencial      Boolean? // yes / no
 
   bankAccountId String?
@@ -96,7 +104,31 @@ model Transactions {
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
+  creditCardId       String?
+  creditCard         CreditCards? @relation(fields: [creditCardId], references: [id], onDelete: SetNull)
+  installmentGroupId String? // mesmo UUID para todas as parcelas de uma compra
+  installmentNumber  Int? // 1, 2, 3...
+  totalInstallments  Int? // total de parcelas
+  isPaid             Boolean?     @default(false) // parcela incluída em fatura paga
+
   @@index([bankAccountId])
   @@index([categoryId])
   @@map("transactions")
+}
+
+model CreditCards {
+  id           String         @id @default(uuid())
+  name         String
+  limit        Int
+  closingDay   Int // dia de fechamento da fatura
+  dueDay       Int // dia de vencimento
+  color        String?
+  ownerId      String?
+  owner        User?          @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  transactions Transactions[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("credit_cards")
 }
