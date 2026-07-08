@@ -34,12 +34,11 @@ export class PrismaTransactionsRepository implements TransactionsRepository {
     })
   }
 
-  async findByCreditCardAndMonth(creditCardId: string, month: string) {
+  async findByCreditCard(creditCardId: string) {
     return prisma.transactions.findMany({
       where: {
         creditCardId,
         type: 'credit_expense',
-        date: { startsWith: month },
       },
     })
   }

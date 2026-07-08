@@ -20,12 +20,10 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
     return this.items
   }
 
-  async findByCreditCardAndMonth(creditCardId: string, month: string) {
+  async findByCreditCard(creditCardId: string) {
     return this.items.filter(
       (item) =>
-        item.creditCardId === creditCardId &&
-        item.type === 'credit_expense' &&
-        item.date.startsWith(month),
+        item.creditCardId === creditCardId && item.type === 'credit_expense',
     )
   }
 

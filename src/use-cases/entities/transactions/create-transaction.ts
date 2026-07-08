@@ -4,6 +4,8 @@ import { BankAccountsRepository } from '@/repositories/bank-accounts-repository'
 import { CreditCardsRepository } from '@/repositories/credit-cards-repository'
 import { Transactions } from '@prisma/client'
 import { calculateBalanceWhenCreateTransaction } from '@/utils/calculator/bank-account-balance/create-transaction'
+import { calculateInstallmentBillingDate } from '@/utils/calculator/credit-card/calculate-installment-billing-date'
+import { addMonthsToDate } from '@/utils/calculator/credit-card/add-months-to-date'
 import { randomUUID } from 'crypto'
 
 interface CreateTransactionUseCaseRequest {
@@ -23,36 +25,6 @@ interface CreateTransactionUseCaseRequest {
 interface CreateTransactionUseCaseResponse {
   transaction: Transactions
   installments?: Transactions[]
-}
-
-function calculateInstallmentBillingDate(
-  purchaseDate: string,
-  closingDay: number,
-  dueDay: number,
-  installmentIndex: number,
-): string {
-  const [year, month, day] = purchaseDate.split('-').map(Number)
-
-  // Purchases made after the card closes for the month roll into next month's bill.
-  let billingMonthIndex = month - 1 + installmentIndex
-  if (day > closingDay) {
-    billingMonthIndex += 1
-  }
-
-  const lastDayOfBillingMonth = new Date(
-    year,
-    billingMonthIndex + 1,
-    0,
-  ).getDate()
-  const billingDay = Math.min(dueDay, lastDayOfBillingMonth)
-
-  const billingDate = new Date(year, billingMonthIndex, billingDay)
-
-  return [
-    billingDate.getFullYear(),
-    String(billingDate.getMonth() + 1).padStart(2, '0'),
-    String(billingDate.getDate()).padStart(2, '0'),
-  ].join('-')
 }
 
 export class CreateTransactionUseCase {
@@ -106,12 +78,7 @@ export class CreateTransactionUseCase {
           estabilishment,
           type,
           essencial,
-          date: calculateInstallmentBillingDate(
-            date,
-            creditCard.closingDay,
-            creditCard.dueDay,
-            i,
-          ),
+          date: i === 0 ? date : addMonthsToDate(date, i),
           categoryId,
           bankAccountId: null,
           destinationBankAccountId: null,
@@ -154,11 +121,18 @@ export class CreateTransactionUseCase {
       }
 
       const billingMonth = date.substring(0, 7)
-      const installments =
-        await this.transactionsRepository.findByCreditCardAndMonth(
-          creditCardId,
-          billingMonth,
-        )
+      const cardInstallments =
+        await this.transactionsRepository.findByCreditCard(creditCardId)
+
+      const installments = cardInstallments.filter(
+        (installment) =>
+          !installment.isPaid &&
+          calculateInstallmentBillingDate(
+            installment.date,
+            creditCard.closingDay,
+            creditCard.dueDay,
+          ).startsWith(billingMonth),
+      )
 
       if (installments.length === 0) {
         throw new Error('No pending installments found for this bill.')

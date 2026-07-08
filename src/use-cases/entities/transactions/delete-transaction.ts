@@ -1,7 +1,9 @@
 import { TransactionsRepository } from '@/repositories/transactions-repository'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { BankAccountsRepository } from '@/repositories/bank-accounts-repository'
+import { CreditCardsRepository } from '@/repositories/credit-cards-repository'
 import { calculateBalanceWhenDeleteTransaction } from '@/utils/calculator/bank-account-balance/delete-transaction'
+import { calculateInstallmentBillingDate } from '@/utils/calculator/credit-card/calculate-installment-billing-date'
 
 interface DeleteTransactionUseCaseRequest {
   id: string
@@ -12,6 +14,7 @@ export class DeleteTransactionUseCase {
   constructor(
     private transactionsRepository: TransactionsRepository,
     private bankAccountsRepository: BankAccountsRepository,
+    private creditCardsRepository: CreditCardsRepository,
   ) {}
 
   async execute({ id, deleteGroup = false }: DeleteTransactionUseCaseRequest) {
@@ -62,18 +65,33 @@ export class DeleteTransactionUseCase {
       })
 
       if (transaction.type === 'credit_payment' && transaction.creditCardId) {
-        const billingMonth = transaction.date.substring(0, 7)
-        const installments =
-          await this.transactionsRepository.findByCreditCardAndMonth(
-            transaction.creditCardId,
-            billingMonth,
+        const creditCard = await this.creditCardsRepository.findById(
+          transaction.creditCardId,
+        )
+
+        if (creditCard) {
+          const billingMonth = transaction.date.substring(0, 7)
+          const cardInstallments =
+            await this.transactionsRepository.findByCreditCard(
+              transaction.creditCardId,
+            )
+
+          const installments = cardInstallments.filter(
+            (installment) =>
+              installment.isPaid &&
+              calculateInstallmentBillingDate(
+                installment.date,
+                creditCard.closingDay,
+                creditCard.dueDay,
+              ).startsWith(billingMonth),
           )
 
-        if (installments.length > 0) {
-          await this.transactionsRepository.setPaidStatus(
-            installments.map((installment) => installment.id),
-            false,
-          )
+          if (installments.length > 0) {
+            await this.transactionsRepository.setPaidStatus(
+              installments.map((installment) => installment.id),
+              false,
+            )
+          }
         }
       }
     } else {

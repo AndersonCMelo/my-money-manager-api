@@ -25,6 +25,7 @@ describe('Delete Transaction Use Case', () => {
     sut = new DeleteTransactionUseCase(
       transactionsRepository,
       bankAccountsRepository,
+      creditCardsRepository,
     )
 
     createTransactionUseCase = new CreateTransactionUseCase(

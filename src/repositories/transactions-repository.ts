@@ -13,10 +13,7 @@ export interface TransactionsRepository {
   findById(id: string): Promise<Transactions | null>
   findByMonth(month: string): Promise<Transactions[]>
   findMany(): Promise<Transactions[]>
-  findByCreditCardAndMonth(
-    creditCardId: string,
-    month: string,
-  ): Promise<Transactions[]>
+  findByCreditCard(creditCardId: string): Promise<Transactions[]>
   create(data: Prisma.TransactionsUncheckedCreateInput): Promise<Transactions>
   update(data: UpdateTransactionRequest): Promise<Transactions>
   delete(id: string): Promise<void>
