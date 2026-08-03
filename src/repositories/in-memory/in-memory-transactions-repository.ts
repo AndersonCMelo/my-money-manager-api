@@ -1,5 +1,6 @@
 import { Prisma, Transactions } from '@prisma/client'
 import {
+  FindDuplicateTransactionRequest,
   TransactionsRepository,
   UpdateTransactionRequest,
 } from '../transactions-repository'
@@ -24,6 +25,25 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
     return this.items.filter(
       (item) =>
         item.creditCardId === creditCardId && item.type === 'credit_expense',
+    )
+  }
+
+  async findDuplicate({
+    type,
+    amount,
+    date,
+    bankAccountId,
+    creditCardId,
+  }: FindDuplicateTransactionRequest) {
+    return (
+      this.items.find(
+        (item) =>
+          item.type === type &&
+          item.amount === amount &&
+          item.date === date &&
+          (bankAccountId ? item.bankAccountId === bankAccountId : true) &&
+          (creditCardId ? item.creditCardId === creditCardId : true),
+      ) ?? null
     )
   }
 

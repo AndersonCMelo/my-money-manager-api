@@ -9,11 +9,22 @@ export interface UpdateTransactionRequest {
   categoryId: string
 }
 
+export interface FindDuplicateTransactionRequest {
+  type: Transactions['type']
+  amount: number
+  date: string
+  bankAccountId: string | null
+  creditCardId: string | null
+}
+
 export interface TransactionsRepository {
   findById(id: string): Promise<Transactions | null>
   findByMonth(month: string): Promise<Transactions[]>
   findMany(): Promise<Transactions[]>
   findByCreditCard(creditCardId: string): Promise<Transactions[]>
+  findDuplicate(
+    data: FindDuplicateTransactionRequest,
+  ): Promise<Transactions | null>
   create(data: Prisma.TransactionsUncheckedCreateInput): Promise<Transactions>
   update(data: UpdateTransactionRequest): Promise<Transactions>
   delete(id: string): Promise<void>

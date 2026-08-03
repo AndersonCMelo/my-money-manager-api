@@ -7,6 +7,7 @@ import { calculateBalanceWhenCreateTransaction } from '@/utils/calculator/bank-a
 import { calculateInstallmentBillingDate } from '@/utils/calculator/credit-card/calculate-installment-billing-date'
 import { addMonthsToDate } from '@/utils/calculator/credit-card/add-months-to-date'
 import { randomUUID } from 'crypto'
+import { DuplicateTransactionError } from '@/use-cases/errors/duplicate-transaction-error'
 
 interface CreateTransactionUseCaseRequest {
   description: string | null
@@ -67,6 +68,20 @@ export class CreateTransactionUseCase {
 
       const installmentCount = totalInstallments ?? 1
       const installmentAmount = Math.floor(amount / installmentCount)
+
+      const duplicateInstallment =
+        await this.transactionsRepository.findDuplicate({
+          type,
+          amount: installmentAmount,
+          date,
+          bankAccountId: null,
+          creditCardId,
+        })
+
+      if (duplicateInstallment) {
+        throw new DuplicateTransactionError()
+      }
+
       const installmentGroupId = randomUUID()
 
       const installments: Transactions[] = []
@@ -143,6 +158,18 @@ export class CreateTransactionUseCase {
         0,
       )
 
+      const duplicatePayment = await this.transactionsRepository.findDuplicate({
+        type,
+        amount: billAmount,
+        date,
+        bankAccountId,
+        creditCardId,
+      })
+
+      if (duplicatePayment) {
+        throw new DuplicateTransactionError()
+      }
+
       const transaction = await this.transactionsRepository.create({
         description,
         amount: billAmount,
@@ -201,6 +228,20 @@ export class CreateTransactionUseCase {
 
       if (!destinationBankAccount) {
         throw new Error('Destination bank account not found.')
+      }
+    }
+
+    if (type === 'expense') {
+      const duplicateExpense = await this.transactionsRepository.findDuplicate({
+        type,
+        amount,
+        date,
+        bankAccountId,
+        creditCardId: null,
+      })
+
+      if (duplicateExpense) {
+        throw new DuplicateTransactionError()
       }
     }
 

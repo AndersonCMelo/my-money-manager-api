@@ -1,13 +1,20 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { makeCreateTransactionUseCase } from '@/use-cases/factories/entities/transactions/make-create-transaction-use-case'
+import { DuplicateTransactionError } from '@/use-cases/errors/duplicate-transaction-error'
 
 export async function create(request: FastifyRequest, reply: FastifyReply) {
   const createBodySchema = z.object({
     description: z.string().nullable(),
     amount: z.number().optional(),
     estabilishment: z.string().nullable(),
-    type: z.enum(['income', 'expense', 'transfer', 'credit_expense', 'credit_payment']),
+    type: z.enum([
+      'income',
+      'expense',
+      'transfer',
+      'credit_expense',
+      'credit_payment',
+    ]),
     essencial: z.boolean(),
     date: z.string(),
     categoryId: z.string(),
@@ -50,6 +57,9 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
 
     return reply.status(201).send(response)
   } catch (error) {
+    if (error instanceof DuplicateTransactionError) {
+      return reply.status(409).send({ message: error.message })
+    }
     if (error instanceof Error && error.message === 'Category not found.') {
       return reply.status(409).send({ message: error.message })
     }

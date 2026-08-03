@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 import {
+  FindDuplicateTransactionRequest,
   TransactionsRepository,
   UpdateTransactionRequest,
 } from '../transactions-repository'
@@ -39,6 +40,24 @@ export class PrismaTransactionsRepository implements TransactionsRepository {
       where: {
         creditCardId,
         type: 'credit_expense',
+      },
+    })
+  }
+
+  async findDuplicate({
+    type,
+    amount,
+    date,
+    bankAccountId,
+    creditCardId,
+  }: FindDuplicateTransactionRequest) {
+    return prisma.transactions.findFirst({
+      where: {
+        type,
+        amount,
+        date,
+        ...(bankAccountId ? { bankAccountId } : {}),
+        ...(creditCardId ? { creditCardId } : {}),
       },
     })
   }

@@ -4,6 +4,7 @@ import { CreateTransactionUseCase } from './create-transaction'
 import { InMemoryCategoriesRepository } from '@/repositories/in-memory/in-memory-categories-repository'
 import { InMemoryBankAccountsRepository } from '@/repositories/in-memory/in-memory-bank-accounts-repository'
 import { InMemoryCreditCardsRepository } from '@/repositories/in-memory/in-memory-credit-cards-repository'
+import { DuplicateTransactionError } from '@/use-cases/errors/duplicate-transaction-error'
 
 let transactionsRepository: InMemoryTransactionsRepository
 let categoriesRepository: InMemoryCategoriesRepository
@@ -428,5 +429,206 @@ describe('Create Transaction Use Case', () => {
     )
 
     expect(pendingInstallments.every((i) => i.isPaid)).toBe(true)
+  })
+
+  it('should not be able to create an expense transaction that duplicates amount, date and bank account', async () => {
+    const category = await categoriesRepository.create({
+      category: 'category-01',
+      color: '#00F0F0',
+      order: 0,
+    })
+
+    const bankAccount = await bankAccountsRepository.create({
+      bankName: 'Premium Bank',
+      accountLabel: 'Premium Bank - Anderson',
+      openingBalance: 500,
+      accountBalance: 500,
+      type: 'checking_account',
+      ownerId: 'user-id',
+    })
+
+    const payload = {
+      description: 'My transaction',
+      amount: 100,
+      estabilishment: 'Ands Store',
+      type: 'expense' as const,
+      essencial: true,
+      date: '2024-05-15',
+      categoryId: category.id,
+      bankAccountId: bankAccount.id,
+      destinationBankAccountId: null,
+      creditCardId: null,
+      totalInstallments: null,
+    }
+
+    await sut.execute(payload)
+
+    await expect(() => sut.execute(payload)).rejects.toBeInstanceOf(
+      DuplicateTransactionError,
+    )
+  })
+
+  it('should be able to create two expense transactions with the same amount and date on different bank accounts', async () => {
+    const category = await categoriesRepository.create({
+      category: 'category-01',
+      color: '#00F0F0',
+      order: 0,
+    })
+
+    const bankAccount = await bankAccountsRepository.create({
+      bankName: 'Premium Bank',
+      accountLabel: 'Premium Bank - Anderson',
+      openingBalance: 500,
+      accountBalance: 500,
+      type: 'checking_account',
+      ownerId: 'user-id',
+    })
+
+    const otherBankAccount = await bankAccountsRepository.create({
+      bankName: 'Other Bank',
+      accountLabel: 'Other Bank - Anderson',
+      openingBalance: 500,
+      accountBalance: 500,
+      type: 'checking_account',
+      ownerId: 'user-id',
+    })
+
+    await sut.execute({
+      description: 'My transaction',
+      amount: 100,
+      estabilishment: 'Ands Store',
+      type: 'expense',
+      essencial: true,
+      date: '2024-05-15',
+      categoryId: category.id,
+      bankAccountId: bankAccount.id,
+      destinationBankAccountId: null,
+      creditCardId: null,
+      totalInstallments: null,
+    })
+
+    const { transaction } = await sut.execute({
+      description: 'My transaction',
+      amount: 100,
+      estabilishment: 'Ands Store',
+      type: 'expense',
+      essencial: true,
+      date: '2024-05-15',
+      categoryId: category.id,
+      bankAccountId: otherBankAccount.id,
+      destinationBankAccountId: null,
+      creditCardId: null,
+      totalInstallments: null,
+    })
+
+    expect(transaction.id).toEqual(expect.any(String))
+  })
+
+  it('should not be able to create a credit expense that duplicates amount, date and credit card', async () => {
+    const category = await categoriesRepository.create({
+      category: 'category-01',
+      color: '#00F0F0',
+      order: 0,
+    })
+
+    const creditCard = await creditCardsRepository.create({
+      name: 'My Card',
+      limit: 1000,
+      closingDay: 25,
+      dueDay: 5,
+      ownerId: 'user-id',
+    })
+
+    const payload = {
+      description: 'New TV',
+      amount: 300,
+      estabilishment: 'Electronics Store',
+      type: 'credit_expense' as const,
+      essencial: false,
+      date: '2024-05-28',
+      categoryId: category.id,
+      bankAccountId: null,
+      destinationBankAccountId: null,
+      creditCardId: creditCard.id,
+      totalInstallments: 1,
+    }
+
+    await sut.execute(payload)
+
+    await expect(() => sut.execute(payload)).rejects.toBeInstanceOf(
+      DuplicateTransactionError,
+    )
+  })
+
+  it('should not be able to pay a duplicate bill for the same credit card, amount and date', async () => {
+    const category = await categoriesRepository.create({
+      category: 'category-01',
+      color: '#00F0F0',
+      order: 0,
+    })
+
+    const bankAccount = await bankAccountsRepository.create({
+      bankName: 'Premium Bank',
+      accountLabel: 'Premium Bank - Anderson',
+      openingBalance: 1000,
+      accountBalance: 1000,
+      type: 'checking_account',
+      ownerId: 'user-id',
+    })
+
+    const creditCard = await creditCardsRepository.create({
+      name: 'My Card',
+      limit: 1000,
+      closingDay: 25,
+      dueDay: 5,
+      ownerId: 'user-id',
+    })
+
+    await sut.execute({
+      description: 'New TV',
+      amount: 300,
+      estabilishment: 'Electronics Store',
+      type: 'credit_expense',
+      essencial: false,
+      date: '2024-05-28',
+      categoryId: category.id,
+      bankAccountId: null,
+      destinationBankAccountId: null,
+      creditCardId: creditCard.id,
+      totalInstallments: 1,
+    })
+
+    await transactionsRepository.create({
+      description: 'Card bill payment',
+      amount: 300,
+      estabilishment: null,
+      type: 'credit_payment',
+      essencial: true,
+      date: '2024-06-05',
+      categoryId: category.id,
+      bankAccountId: bankAccount.id,
+      destinationBankAccountId: null,
+      creditCardId: creditCard.id,
+      installmentGroupId: null,
+      installmentNumber: null,
+      totalInstallments: null,
+      isPaid: false,
+    })
+
+    await expect(() =>
+      sut.execute({
+        description: 'Card bill payment',
+        amount: 0,
+        estabilishment: null,
+        type: 'credit_payment',
+        essencial: true,
+        date: '2024-06-05',
+        categoryId: category.id,
+        bankAccountId: bankAccount.id,
+        destinationBankAccountId: null,
+        creditCardId: creditCard.id,
+        totalInstallments: null,
+      }),
+    ).rejects.toBeInstanceOf(DuplicateTransactionError)
   })
 })
