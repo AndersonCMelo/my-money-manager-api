@@ -75,6 +75,7 @@ export class CreateTransactionUseCase {
           amount: installmentAmount,
           date,
           categoryId,
+          estabilishment: estabilishment ?? '',
           bankAccountId: null,
           creditCardId,
         })
@@ -164,6 +165,7 @@ export class CreateTransactionUseCase {
         amount: billAmount,
         date,
         categoryId,
+        estabilishment: estabilishment ?? '',
         bankAccountId,
         creditCardId,
       })
@@ -239,6 +241,7 @@ export class CreateTransactionUseCase {
         amount,
         date,
         categoryId,
+        estabilishment: estabilishment ?? '',
         bankAccountId,
         creditCardId: null,
       })

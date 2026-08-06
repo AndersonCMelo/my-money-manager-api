@@ -14,6 +14,7 @@ export interface FindDuplicateTransactionRequest {
   amount: number
   date: string
   categoryId: string
+  estabilishment: string
   bankAccountId: string | null
   creditCardId: string | null
 }

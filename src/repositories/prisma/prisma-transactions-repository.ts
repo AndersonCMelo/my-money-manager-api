@@ -49,6 +49,7 @@ export class PrismaTransactionsRepository implements TransactionsRepository {
     amount,
     date,
     categoryId,
+    estabilishment,
     bankAccountId,
     creditCardId,
   }: FindDuplicateTransactionRequest) {
@@ -58,6 +59,7 @@ export class PrismaTransactionsRepository implements TransactionsRepository {
         amount,
         date,
         categoryId,
+        estabilishment,
         ...(bankAccountId ? { bankAccountId } : {}),
         ...(creditCardId ? { creditCardId } : {}),
       },
