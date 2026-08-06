@@ -32,6 +32,7 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
     type,
     amount,
     date,
+    categoryId,
     bankAccountId,
     creditCardId,
   }: FindDuplicateTransactionRequest) {
@@ -41,6 +42,7 @@ export class InMemoryTransactionsRepository implements TransactionsRepository {
           item.type === type &&
           item.amount === amount &&
           item.date === date &&
+          item.categoryId === categoryId &&
           (bankAccountId ? item.bankAccountId === bankAccountId : true) &&
           (creditCardId ? item.creditCardId === creditCardId : true),
       ) ?? null

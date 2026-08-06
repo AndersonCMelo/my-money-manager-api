@@ -13,6 +13,7 @@ export interface FindDuplicateTransactionRequest {
   type: Transactions['type']
   amount: number
   date: string
+  categoryId: string
   bankAccountId: string | null
   creditCardId: string | null
 }
